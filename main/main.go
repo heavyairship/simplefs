@@ -46,6 +46,8 @@ func main() {
 				if err != nil {
 					fmt.Println(err)
 				}
+			} else {
+				fmt.Println("mkdir: Missing argument <path>")
 			}
 		case "touch":
 			if len(tokens) > 1 {
@@ -53,6 +55,17 @@ func main() {
 				if err != nil {
 					fmt.Println(err)
 				}
+			} else {
+				fmt.Println("touch: Missing argument <path>")
+			}
+		case "rm":
+			if len(tokens) > 1 {
+				err := fs.Remove(tokens[1])
+				if err != nil {
+					fmt.Println(err)
+				}
+			} else {
+				fmt.Println("rm: Missing argument <path>")
 			}
 		case "cd":
 			if len(tokens) > 1 {
@@ -60,6 +73,28 @@ func main() {
 				if err != nil {
 					fmt.Println(err)
 				}
+			}
+		case "write":
+			if len(tokens) > 2 {
+				err := fs.Write(tokens[1], []byte(strings.Join(tokens[2:], "")))
+				if err != nil {
+					fmt.Println(err)
+				}
+			} else if len(tokens) > 1 {
+				fmt.Println("write: Missing argument <data>")
+			} else {
+				fmt.Println("write: Missing arguments <path> <data>")
+			}
+		case "read":
+			if len(tokens) > 1 {
+				res, err := fs.Read(tokens[1])
+				if err != nil {
+					fmt.Println(err)
+				} else {
+					fmt.Println(string(res))
+				}
+			} else {
+				fmt.Println("read: Missing argument <path>")
 			}
 		case "exit":
 			os.Exit(0)

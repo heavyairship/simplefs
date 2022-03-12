@@ -7,14 +7,16 @@ import (
 
 type IType string
 
+const BlockSize = 8
+
 const (
 	Directory IType = "directory"
 	File      IType = "file"
 )
 
 type DataBlock struct {
-	Data [1024]byte
-	End  uint
+	Data [BlockSize]byte
+	End  int
 }
 
 type Entries map[string]*INode
@@ -22,8 +24,9 @@ type DataBlocks []*DataBlock
 
 type INode struct {
 	Type     IType
+	Parent   *INode
 	Children Entries
-	Data     DataBlocks
+	Contents DataBlocks
 }
 
 func toStrings(entries Entries) []string {
