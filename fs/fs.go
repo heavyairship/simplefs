@@ -32,6 +32,17 @@ func NewFileSystem() FileSystem {
 	return &fileSystem{root: root, cwd: root}
 }
 
+func (f *fileSystem) List(path string) (model.Entries, error) {
+	target, name, err := f.locate(path)
+	if err != nil {
+		return nil, fmt.Errorf("ls: %s", err)
+	}
+	if target.Type == model.Directory {
+		return target.Children, nil
+	}
+	return model.Entries{name: target}, nil
+}
+
 func (f *fileSystem) Link(srcPath string, dstPath string) error {
 	src, _, err := f.locate(srcPath)
 	if err != nil {
@@ -53,17 +64,6 @@ func (f *fileSystem) Link(srcPath string, dstPath string) error {
 	}
 	dstParent.Children[name] = src
 	return nil
-}
-
-func (f *fileSystem) List(path string) (model.Entries, error) {
-	target, name, err := f.locate(path)
-	if err != nil {
-		return nil, fmt.Errorf("ls: %s", err)
-	}
-	if target.Type == model.Directory {
-		return target.Children, nil
-	}
-	return model.Entries{name: target}, nil
 }
 
 func (f *fileSystem) Touch(path string) error {
@@ -158,6 +158,26 @@ func (f *fileSystem) PrintCurrentWorkingDir() (string, error) {
 	return out, nil
 }
 
+func (f *fileSystem) Read(path string) ([]byte, error) {
+	target, _, err := f.locate(path)
+	if err != nil {
+		return nil, fmt.Errorf("read: %s", err)
+	}
+	if target.Type != model.File {
+		return nil, fmt.Errorf("read: %s: Cannot read a directory", path)
+	}
+	out := make([]byte, model.BlockSize*len(target.Contents))
+	totalBytesRead := 0
+	for _, block := range target.Contents {
+		bytesRead := copy(out[totalBytesRead:], block.Data[:block.End])
+		if bytesRead != block.End {
+			return nil, fmt.Errorf("read: %s: Internal error: could not read from file", path)
+		}
+		totalBytesRead += bytesRead
+	}
+	return out[:totalBytesRead], nil
+}
+
 func (f *fileSystem) Write(path string, data []byte) error {
 	target, _, err := f.locate(path)
 	if err != nil {
@@ -179,26 +199,6 @@ func (f *fileSystem) Write(path string, data []byte) error {
 		target.Contents = append(target.Contents, block)
 	}
 	return nil
-}
-
-func (f *fileSystem) Read(path string) ([]byte, error) {
-	target, _, err := f.locate(path)
-	if err != nil {
-		return nil, fmt.Errorf("read: %s", err)
-	}
-	if target.Type != model.File {
-		return nil, fmt.Errorf("read: %s: Cannot read a directory", path)
-	}
-	out := make([]byte, model.BlockSize*len(target.Contents))
-	totalBytesRead := 0
-	for _, block := range target.Contents {
-		bytesRead := copy(out[totalBytesRead:], block.Data[:block.End])
-		if bytesRead != block.End {
-			return nil, fmt.Errorf("read: %s: Internal error: could not read from file", path)
-		}
-		totalBytesRead += bytesRead
-	}
-	return out[:totalBytesRead], nil
 }
 
 func (f *fileSystem) PrettyPrint() string {
