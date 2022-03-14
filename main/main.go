@@ -38,7 +38,7 @@ func main() {
 			if err != nil {
 				fmt.Println(err)
 			} else {
-				fmt.Println(res.PrettyPrint())
+				fmt.Print(res.PrettyPrint())
 			}
 		case "ln":
 			if len(tokens) > 2 {

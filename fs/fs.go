@@ -8,8 +8,6 @@ import (
 	"github.com/simplefs/model"
 )
 
-const Separator = "/"
-
 type FileSystem interface {
 	List(path string) (model.Entries, error)
 	Link(src string, dst string) error
@@ -77,7 +75,7 @@ func (f *fileSystem) Touch(path string) error {
 }
 
 func (f *fileSystem) MakeDir(path string) error {
-	pathComponents := strings.Split(path, Separator)
+	pathComponents := strings.Split(path, model.Separator)
 	root := f.selectRoot(path)
 	for idx, component := range pathComponents {
 		if component == "" {
@@ -146,9 +144,9 @@ func (f *fileSystem) PrintCurrentWorkingDir() (string, error) {
 		curr = curr.Parent
 	}
 	reverse(components)
-	out := strings.Join(components, Separator)
-	if !strings.HasPrefix(out, Separator) {
-		out = Separator + out
+	out := strings.Join(components, model.Separator)
+	if !strings.HasPrefix(out, model.Separator) {
+		out = model.Separator + out
 	}
 	return out, nil
 }
@@ -213,7 +211,7 @@ func min(a int, b int) int {
 }
 
 func (f *fileSystem) selectRoot(path string) *model.INode {
-	if strings.HasPrefix(path, Separator) {
+	if strings.HasPrefix(path, model.Separator) {
 		return f.root
 	} else {
 		return f.cwd
@@ -229,9 +227,9 @@ func newFile(parent *model.INode) *model.INode {
 }
 
 func (f *fileSystem) locate(path string) (*model.INode, string, error) {
-	pathComponents := strings.Split(path, Separator)
+	pathComponents := strings.Split(path, model.Separator)
 	root := f.selectRoot(path)
-	name := Separator
+	name := model.Separator
 	for _, component := range pathComponents {
 		if component == "" {
 			continue
@@ -251,13 +249,13 @@ func (f *fileSystem) locate(path string) (*model.INode, string, error) {
 }
 
 func parentPath(path string) string {
-	components := strings.Split(path, Separator)
-	return strings.Join(components[:len(components)-1], Separator)
+	components := strings.Split(path, model.Separator)
+	return strings.Join(components[:len(components)-1], model.Separator)
 }
 
 func basename(path string) string {
-	components := strings.Split(path, Separator)
-	return strings.Join(components[len(components)-1:], Separator)
+	components := strings.Split(path, model.Separator)
+	return strings.Join(components[len(components)-1:], model.Separator)
 }
 
 func reverse(l []string) {
