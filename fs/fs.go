@@ -37,6 +37,9 @@ func (f *fileSystem) Link(srcPath string, dstPath string) error {
 	if err != nil {
 		return fmt.Errorf("ln: %s", err)
 	}
+	if src.Type == model.Directory {
+		return fmt.Errorf("ln: %s: Is a directory", srcPath)
+	}
 	dstParent, _, err := f.locate(parentPath(dstPath))
 	if err != nil {
 		return fmt.Errorf("ln: %s", err)
@@ -44,7 +47,11 @@ func (f *fileSystem) Link(srcPath string, dstPath string) error {
 	if dstParent.Type != model.Directory {
 		return fmt.Errorf("ln: %s: Not a directory", dstPath)
 	}
-	dstParent.Children[basename(dstPath)] = src
+	name := basename(dstPath)
+	if _, ok := dstParent.Children[name]; ok {
+		return fmt.Errorf("ln: %s: File exists", dstPath)
+	}
+	dstParent.Children[name] = src
 	return nil
 }
 
