@@ -40,9 +40,20 @@ func main() {
 			} else {
 				fmt.Println(res.PrettyPrint())
 			}
+		case "ln":
+			if len(tokens) > 2 {
+				err := fs.Link(tokens[1], tokens[2])
+				if err != nil {
+					fmt.Println(err)
+				}
+			} else if len(tokens) > 1 {
+				fmt.Println("ln: Missing argument <dst>")
+			} else {
+				fmt.Println("ln: Missing arguments <src> <dst>")
+			}
 		case "mkdir":
 			if len(tokens) > 1 {
-				err := fs.MkDir(tokens[1])
+				err := fs.MakeDir(tokens[1])
 				if err != nil {
 					fmt.Println(err)
 				}
@@ -73,6 +84,13 @@ func main() {
 				if err != nil {
 					fmt.Println(err)
 				}
+			}
+		case "pwd":
+			res, err := fs.PrintCurrentWorkingDir()
+			if err != nil {
+				fmt.Println(err)
+			} else {
+				fmt.Println(res)
 			}
 		case "write":
 			if len(tokens) > 2 {
