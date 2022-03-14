@@ -190,14 +190,22 @@ func (f *fileSystem) Write(path string, data []byte) error {
 	bytesWritten := 0
 	totalBytes := len(data)
 	for bytesWritten < totalBytes {
-		block := &model.DataBlock{End: 0}
-		bytesToWrite := min(totalBytes-bytesWritten, model.BlockSize)
-		block.End = copy(block.Data[:], data[bytesWritten:bytesWritten+bytesToWrite])
-		if block.End != bytesToWrite {
-			return fmt.Errorf("write: %s: Internal error: could not write to file", path)
+		var lastBlock *model.DataBlock = nil
+		if len(target.Contents) > 0 {
+			lastBlock = target.Contents[len(target.Contents)-1]
 		}
-		bytesWritten += bytesToWrite
-		target.Contents = append(target.Contents, block)
+		var block *model.DataBlock = nil
+		if lastBlock != nil && lastBlock.End < model.BlockSize {
+			block = lastBlock
+		} else {
+			block = &model.DataBlock{End: 0}
+		}
+		bytes := copy(block.Data[block.End:], data[bytesWritten:])
+		block.End += bytes
+		bytesWritten += bytes
+		if block != lastBlock {
+			target.Contents = append(target.Contents, block)
+		}
 	}
 	return nil
 }
@@ -215,7 +223,6 @@ func (f *fileSystem) Truncate(path string) error {
 }
 
 func (f *fileSystem) PrettyPrint() string {
-	f.root.Parent = nil // prevent cycle
 	s, err := json.MarshalIndent(f.cwd, "", "  ")
 	if err != nil {
 		fmt.Printf("%v\n", err)

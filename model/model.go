@@ -26,7 +26,7 @@ type DataBlocks []*DataBlock
 
 type INode struct {
 	Type     IType
-	Parent   *INode
+	Parent   *INode `json:"-"`
 	Children Entries
 	Contents DataBlocks
 }
