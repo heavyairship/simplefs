@@ -49,9 +49,6 @@ func (e Entries) PrettyPrint() string {
 		names = append(names, name+suffix)
 	}
 	out := strings.Join(names, "\n")
-	if out != "" {
-		return out + "\n"
-	}
 	return out
 }
 

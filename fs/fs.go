@@ -18,6 +18,7 @@ type FileSystem interface {
 	PrintCurrentWorkingDir() (string, error)
 	Read(path string) ([]byte, error)
 	Write(path string, data []byte) error
+	Truncate(path string) error
 	PrettyPrint() string
 }
 
@@ -198,6 +199,18 @@ func (f *fileSystem) Write(path string, data []byte) error {
 		bytesWritten += bytesToWrite
 		target.Contents = append(target.Contents, block)
 	}
+	return nil
+}
+
+func (f *fileSystem) Truncate(path string) error {
+	target, _, err := f.locate(path)
+	if err != nil {
+		return fmt.Errorf("trunc: %s", err)
+	}
+	if target.Type != model.File {
+		return fmt.Errorf("trunc: %s: Cannot truncate a directory", path)
+	}
+	target.Contents = nil
 	return nil
 }
 

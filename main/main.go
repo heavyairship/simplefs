@@ -38,7 +38,7 @@ func main() {
 			if err != nil {
 				fmt.Println(err)
 			} else {
-				fmt.Print(res.PrettyPrint())
+				fmt.Println(res.PrettyPrint())
 			}
 		case "ln":
 			if len(tokens) > 2 {
@@ -105,7 +105,7 @@ func main() {
 			}
 		case "write":
 			if len(tokens) > 2 {
-				err := fs.Write(tokens[1], []byte(strings.Join(tokens[2:], "")))
+				err := fs.Write(tokens[1], []byte(text[strings.Index(text, tokens[1])+len(tokens[1])+1:]))
 				if err != nil {
 					fmt.Println(err)
 				}
@@ -113,6 +113,15 @@ func main() {
 				fmt.Println("write: Missing argument <data>")
 			} else {
 				fmt.Println("write: Missing arguments <path> <data>")
+			}
+		case "trunc":
+			if len(tokens) > 1 {
+				err := fs.Truncate(tokens[1])
+				if err != nil {
+					fmt.Println(err)
+				}
+			} else {
+				fmt.Printf("trunc: Missing argument <path>")
 			}
 		case "exit":
 			os.Exit(0)
